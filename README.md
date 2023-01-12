@@ -3,6 +3,13 @@
 _✨基于与求生之路2服务器协议，一款可以查询求生服务器状态的库✨_</b>
 _✨Based on the agreement with the Left 4 Dead 2 server, a library that can query the status of the survival server.✨_
 
+<a href="https://github.com/Umamusume-Agnes-Digital/VSQ/stargazers">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/Umamusume-Agnes-Digital/VSQ?color=%09%2300BFFF&style=flat-square">
+</a>
+<a href="https://github.com/Umamusume-Agnes-Digital/VSQ/issues">
+    <img alt="GitHub issues" src="https://img.shields.io/github/issues/Umamusume-Agnes-Digital/VSQ?color=Emerald%20green&style=flat-square">
+</a>
+
 ## Description说明
         
 

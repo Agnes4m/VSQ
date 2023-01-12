@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
  
 setuptools.setup(
     name="VSQ",
-    version="0.0.1", 
+    version="0.0.2", 
     author="Umamusume-Agnes-Digital", 
     author_email="Z735803792@163.com", 
     description="VALVE-Server Queries(now for L4D2)",
@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/Umamusume-Agnes-Digital/VSQ",
     packages=["VSQ"],
     project_urls={
-        "Bug Tracker": "https://github.com/Umamusume-Agnes-Digital/VSQ",
+        "Bug Tracker": "https://github.com/Umamusume-Agnes-Digital/VSQ/issues",
     },
     classifiers=[
         "Programming Language :: Python :: 3",
