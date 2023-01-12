@@ -90,12 +90,15 @@ def unpack_info(data) -> list:
 def dict_info(msg:list) ->dict:
     tu_info = (header, protocol, name, map_, folder, game, appid, players, max_players, bots, server_type, environment, visibility, vac, version, edf) = msg
     msg_dict = {} 
-    for i in range(16):
+    for i in range(15):
         try:
             tu_info[i] = tu_info[i].decode()
-        except:
+        except (AttributeError,UnicodeDecodeError):
             pass
+        finally:
+            tu_info[i] = str(tu_info[i])
         msg_dict.update({tu_title[i]:tu_info[i]})
+    msg_dict.update({tu_title[15]:tu_info[15]})
     # print(msg_dict)
     return msg_dict
 
@@ -163,7 +166,7 @@ def check_string(data:bytes,sock:int) -> list:
     return [new[0],data_len]
 
 
-def get_server_info(ip, port,times) -> dict:
+def get_server_info(ip:str, port:int,times) -> dict:
     """ip to dict"""
     if (ip, port) in cache:
         # check if the cache is still fresh
