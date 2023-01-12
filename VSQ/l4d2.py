@@ -1,8 +1,11 @@
 import socket
 import struct
 
+tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'players', 'max_players', 'bots', 'server_type', 'environment', 'visibility', 'vac', 'version', 'edf')
 
-def get_server_info(ip, port):
+
+def server_info(ip, port) -> bytes:
+    """send message/back bytes"""
     address = (ip, port)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(5)
@@ -12,8 +15,6 @@ def get_server_info(ip, port):
     try:
         s.sendto(header+packet, address)
         data, _ = s.recvfrom(1024)
-        print('第一次返回')
-        print(data)
     except socket.timeout:
         print("Timeout Occured")
         return
@@ -22,24 +23,31 @@ def get_server_info(ip, port):
         return
     # check if the response contains challenge number
     if data[4] == 65:
+        """challenge_number"""
         challenge_number = data[5:]
         packet = header + packet + challenge_number
         struct.unpack('<L', challenge_number)
         s.sendto(packet, address)
         data, _ = s.recvfrom(1024)
-        print('第二次返回')
     if data[4] == 73:
-        data = data[4:]
-        print(data)
-        print(len(data))
         print('Server info received')
+        data = data[4:]
+    elif data == b'A':
+        print("Server is using Challenge Number")
+    else:
+        print("Invalid Response")
+    s.close()
+    print(len(data))
+    return data
+
+def unpack_info(data) -> list:
         '''
-        byte	8 bit character or unsigned integer
-        short	16 bit signed integer
-        long	32 bit signed integer
-        float	32 bit floating point
-        long long	64 bit unsigned integer
-        string	variable-length byte field, encoded in UTF-8, terminated by 0x00
+        byte	8 bit character or unsigned integer \n
+        short	16 bit signed integer \n
+        long	32 bit signed integer \n
+        float	32 bit floating point \n
+        long long	64 bit unsigned integer \n
+        string	variable-length byte field, encoded in UTF-8, terminated by 0x00 \n
         '''
         """PLAN A"""
         # message = struct.unpack('<b b 35x 13x 12x 14x h b b b c c b b 8x 46x', data)
@@ -51,18 +59,15 @@ def get_server_info(ip, port):
         n:int = 0 # time
         sock:int = 0 # order
         msg = []
-        for i in data:
-            n +=1
+        for n in range(1,17):
             if n in [1,2,8,9,10,11,12,13,14]: # byte
                 new = struct.unpack('<b', bytes([data[sock]]))
                 msg.append(new[0])
                 sock += 1
-                continue
             if n in [7]: # short
                 new = struct.unpack('<h',bytes(data[sock:sock+2]))
                 msg.append(new[0])
                 sock += 2
-                continue
             # if n in [17]: # long long
             #     new = struct.unpack('<c',bytes(data[s:s+8]))
             #     msg.append(new[0])
@@ -70,55 +75,81 @@ def get_server_info(ip, port):
             if n in [3,4,5,6,15,16]: # string-check the len
                 new,data_len =check_string(data,sock)
                 msg.append(new)
+                main_log = sock
                 sock = sock + data_len + 1
-        print(msg)
-        header, protocol, name, map_, folder, game, appid, players, max_players, bots, server_type, environment, visibility, vac, version, edf = msg
-        print("3、Server Name: ", name.decode('utf-8'))
-        print("4、Map: ", map_.decode('utf-8'))
-        print("5、Folder: ", folder.decode('utf-8',errors='ignore'))
-        print("6、Game: ", game.decode('utf-8',errors='ignore'))
-        print('7、appid: ',appid)
-        print("8、Players: ", players)
-        print("9、Maximum Players: ", max_players)
-        print("10、Bots: ",bots)
-        print("11、Server type: ", server_type)
-        print("12、Environment: ",environment)
-        print("13、Visibility: ",visibility)
-        print("14、Vac: ",vac)
-        print("15、Server version: ",version.decode())
-        edf = int.from_bytes(edf, byteorder='little')
-        offset = struct.calcsize('<b')
-        if edf & 0x80 :
-            port, = struct.unpack('<H', data[offset:offset+2])
-            print('16、port:', port)
+            print('第',n,'次值为：',sock)
+        return [msg,main_log]
+
+
+
+def dict_info(msg:list) ->dict:
+    tu_info = (header, protocol, name, map_, folder, game, appid, players, max_players, bots, server_type, environment, visibility, vac, version, edf) = msg
+    msg_dict = {} 
+    for i in range(16):
+        try:
+            tu_info[i] = tu_info[i].decode()
+        except:
+            pass
+        msg_dict.update({tu_title[i]:tu_info[i]})
+    print(msg_dict)
+    return msg_dict
+
+def edf_split(msg_dict:dict,data,main_len:int) -> dict:
+    a = ['port','steam_id','spectator_port','spectator_name','Keywords','GameID']
+    edf = msg_dict['edf']
+    edf = int.from_bytes(edf, byteorder='little')
+    offset = main_len
+    print(offset)
+    if edf & 0x80 :
+        port:str = struct.unpack('<H', data[offset:offset+2])
+        msg_dict.update({a[0]:port})
+    offset += 2
+    if edf & 0x10:
+        steam_id:str = struct.unpack('<Q', data[offset:offset+8])
+        msg_dict.update({a[1]:steam_id})
+    offset += 8
+    if edf & 0x40:
+        spectator_port, = struct.unpack('<H', data[offset:offset+3])
+        msg_dict.update({a[2]:spectator_port})
         offset += 2
-        if edf & 0x10:
-            steam_id, = struct.unpack('<Q', data[offset:offset+8])
-            print('17、SteamID:', steam_id)
-        offset += 8
-        if edf & 0x40:
-            spectator_port, = struct.unpack('<H', data[offset:offset+3])
-            print('18、spectator_port',spectator_port)
-            new,data_len =check_string(data,offset)
-            spectator_name , = new
-            print('19、spectator_name',spectator_name.decode())
-        offset += 15
-        if edf & 0x20:
-            new,data_len =check_string(data,offset)
-            Keywords = new
-            print('20、Keywords',Keywords.decode())
-        offset += 13
-        if edf & 0x01:
-            GameID, = struct.unpack('<Q', data[offset:offset+8])
-            print('21、GameID',GameID)
-    elif data == b'A':
-        print("Server is using Challenge Number")
-    else:
-        print("Invalid Response")
-    s.close()
+        new,data_len =check_string(data,offset)
+        spectator_name:str  = new
+        msg_dict.update({a[3]:spectator_name.decode()})
+        offset += data_len
+    if edf & 0x20:
+        new,data_len =check_string(data,offset)
+        Keywords:str = new
+        msg_dict.update({a[4]:Keywords.decode()})
+        offset += data_len
+    if edf & 0x01:
+        GameID:str = struct.unpack('<Q', data[offset:offset+8])
+        msg_dict.update({a[1]:GameID})
+        offset += data_len
+    print(msg_dict)
+    return msg_dict
+    
+    
+    
+
+"""
+print("3、Server Name: ", name.decode('utf-8'))
+print("4、Map: ", map_.decode('utf-8'))
+print("5、Folder: ", folder.decode('utf-8',errors='ignore'))
+print("6、Game: ", game.decode('utf-8',errors='ignore'))
+print('7、appid: ',appid)
+print("8、Players: ", players)
+print("9、Maximum Players: ", max_players)
+print("10、Bots: ",bots)
+print("11、Server type: ", server_type)
+print("12、Environment: ",environment)
+print("13、Visibility: ",visibility)
+print("14、Vac: ",vac)
+print("15、Server version: ",version.decode())
+"""
 
 
-def check_string(data:bytes,sock:int):
+def check_string(data:bytes,sock:int) -> list:
+    """check len(string)"""
     data_this = data[sock:]
     data_right = data_this.split(b'\x00')
     data_len = len(data_right[0])
@@ -126,4 +157,61 @@ def check_string(data:bytes,sock:int):
     new = struct.unpack(tag,bytes(data[sock:sock+data_len]))
     return [new[0],data_len]
 
-__all__ = ['get_server_info']
+
+def get_server_info(ip, port) -> dict:
+    """ip to dict"""
+    data = server_info(ip, port)
+    data_list,data_len = unpack_info(data)
+    message = edf_split(dict_info(data_list),data,data_len)
+    print(message)
+    return message
+
+        # header, protocol, name, map_, folder, /game, appid, players, max_players, bots, /server_type, environment, visibility, vac, version, /edf  = struct.unpack('<b b 35s 13s 12s 14s h b b b c c b b 8s 46s', data)
+
+def header(ip,port):
+    return get_server_info(ip, port)['header']
+
+def protocol(ip,port):
+    return get_server_info(ip, port)['protocol']
+
+def name(ip,port):
+    return get_server_info(ip, port)['name']
+
+def map_(ip,port):
+    return get_server_info(ip, port)['map_']
+
+def folder(ip,port):
+    return get_server_info(ip, port)['folder']
+
+def appid(ip,port):
+    return get_server_info(ip, port)['appid']
+
+def players(ip,port):
+    return get_server_info(ip, port)['players']
+
+def max_players(ip,port):
+    return get_server_info(ip, port)['max_players']
+
+def server_type(ip,port):
+    return get_server_info(ip, port)['server_type']
+
+def environment(ip,port):
+    return get_server_info(ip, port)['environment']
+
+def visibility(ip,port):
+    return get_server_info(ip, port)['visibility']
+
+def vac(ip,port):
+    return get_server_info(ip, port)['vac']
+
+def version(ip,port):
+    return get_server_info(ip, port)['version']
+
+def version(ip,port):
+    return get_server_info(ip, port)['version']
+
+def edf(ip,port):
+    return get_server_info(ip, port)['edf']
+    
+# for variable in tu_title:
+#     locals()[variable] = lambda ip,port: get_server_info(ip,port)[variable]
