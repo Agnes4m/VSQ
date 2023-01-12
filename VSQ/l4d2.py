@@ -1,10 +1,15 @@
 import socket
 import struct
+import time
 
+cache = {}
 tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'players', 'max_players', 'bots', 'server_type', 'environment', 'visibility', 'vac', 'version', 'edf')
 
 
-def server_info(ip, port) -> bytes:
+def server_info(
+    ip:str, 
+    port:int
+    ) -> bytes:
     """send message/back bytes"""
     address = (ip, port)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -37,7 +42,7 @@ def server_info(ip, port) -> bytes:
     else:
         print("Invalid Response")
     s.close()
-    print(len(data))
+    # print(len(data))
     return data
 
 def unpack_info(data) -> list:
@@ -77,7 +82,7 @@ def unpack_info(data) -> list:
                 msg.append(new)
                 main_log = sock
                 sock = sock + data_len + 1
-            print('第',n,'次值为：',sock)
+            # print('第',n,'次值为：',sock)
         return [msg,main_log]
 
 
@@ -91,7 +96,7 @@ def dict_info(msg:list) ->dict:
         except:
             pass
         msg_dict.update({tu_title[i]:tu_info[i]})
-    print(msg_dict)
+    # print(msg_dict)
     return msg_dict
 
 def edf_split(msg_dict:dict,data,main_len:int) -> dict:
@@ -99,7 +104,7 @@ def edf_split(msg_dict:dict,data,main_len:int) -> dict:
     edf = msg_dict['edf']
     edf = int.from_bytes(edf, byteorder='little')
     offset = main_len
-    print(offset)
+    # print(offset)
     if edf & 0x80 :
         port:str = struct.unpack('<H', data[offset:offset+2])
         msg_dict.update({a[0]:port})
@@ -125,7 +130,7 @@ def edf_split(msg_dict:dict,data,main_len:int) -> dict:
         GameID:str = struct.unpack('<Q', data[offset:offset+8])
         msg_dict.update({a[1]:GameID})
         offset += data_len
-    print(msg_dict)
+    # print(msg_dict)
     return msg_dict
     
     
@@ -158,60 +163,65 @@ def check_string(data:bytes,sock:int) -> list:
     return [new[0],data_len]
 
 
-def get_server_info(ip, port) -> dict:
+def get_server_info(ip, port,times) -> dict:
     """ip to dict"""
+    if (ip, port) in cache:
+        # check if the cache is still fresh
+        if time.time() - cache[(ip, port)]['timestamp'] < times:
+            return cache[(ip, port)]['message']
     data = server_info(ip, port)
     data_list,data_len = unpack_info(data)
     message = edf_split(dict_info(data_list),data,data_len)
-    print(message)
+    # print(message)
+    cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
     return message
 
         # header, protocol, name, map_, folder, /game, appid, players, max_players, bots, /server_type, environment, visibility, vac, version, /edf  = struct.unpack('<b b 35s 13s 12s 14s h b b b c c b b 8s 46s', data)
 
-def header(ip,port):
-    return get_server_info(ip, port)['header']
+def header(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['header']
 
-def protocol(ip,port):
-    return get_server_info(ip, port)['protocol']
+def protocol(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['protocol']
 
-def name(ip,port):
-    return get_server_info(ip, port)['name']
+def name(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['name']
 
-def map_(ip,port):
-    return get_server_info(ip, port)['map_']
+def map_(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['map_']
 
-def folder(ip,port):
-    return get_server_info(ip, port)['folder']
+def folder(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['folder']
 
-def appid(ip,port):
-    return get_server_info(ip, port)['appid']
+def appid(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['appid']
 
-def players(ip,port):
-    return get_server_info(ip, port)['players']
+def players(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['players']
 
-def max_players(ip,port):
-    return get_server_info(ip, port)['max_players']
+def max_players(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['max_players']
 
-def server_type(ip,port):
-    return get_server_info(ip, port)['server_type']
+def server_type(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['server_type']
 
-def environment(ip,port):
-    return get_server_info(ip, port)['environment']
+def environment(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['environment']
 
-def visibility(ip,port):
-    return get_server_info(ip, port)['visibility']
+def visibility(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['visibility']
 
-def vac(ip,port):
-    return get_server_info(ip, port)['vac']
+def vac(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['vac']
 
-def version(ip,port):
-    return get_server_info(ip, port)['version']
+def version(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['version']
 
-def version(ip,port):
-    return get_server_info(ip, port)['version']
+def version(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['version']
 
-def edf(ip,port):
-    return get_server_info(ip, port)['edf']
+def edf(ip,port,times:int = 60):
+    return get_server_info(ip, port,times)['edf']
     
 # for variable in tu_title:
 #     locals()[variable] = lambda ip,port: get_server_info(ip,port)[variable]
