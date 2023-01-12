@@ -11,7 +11,7 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
 </a>
 
 ## Description说明
-        
+        目标是实现服务器全链接(1/N)
 
 
 ## 🎉 available已实现
@@ -29,8 +29,8 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
 函数包括
 
         get_server_info # 总信息 -> dict
-        (ip : str , port : int , time : int = 60)
-        ip:ipv4
+        (ip : str , port : int , times : int = 60)
+        ip:ipv4 ,port:端口号 , times 默认为60,也就是说一分钟内同时调用任意函数，服务器将使用第一次的缓存，这可以使得防止被当做DDOS
 
         header, protocol, name, map_, folder, game, appid, players, max_players, bots, server_type, environment, visibility, vac, version, edf
         # 分别代表服务器返回的参数
@@ -38,12 +38,23 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
 
 ## 🍻 exemple示例代码
 
-    如果我想要获取服务器名字
+    如果我想要获取服务器名字/地图/玩家数量
         from VSQ import l4d2
         ip:str = '127.0.0.1' 
         port:int = 20715 
         name = l4d2.name(ip,port)
+        map_ = l4d2.map_(ip,port)
+        players = l4d2.players(ip,port)
         print(name)
+        print(map_)
+        print(players)
+    
+    如果我想要获取服务器所有信息的字典（所有的键在上面，其中edf是bytes类，后面还有额外的附带信息所以有21个键对，如果有需求可以看源代码
+        from VSQ import l4d2
+        ip:str = '127.0.0.1' 
+        port:int = 20715 
+        server_dict = l4d2.get_server_info(ip,port)
+        print(server_dict)
 
 ## 🌐 Communicate with me联系我
 
