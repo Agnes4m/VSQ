@@ -308,14 +308,14 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
     b = {}
     c = []
     players_num = data[0]
-    offset = 2
+    offset = 1
     for i in range(players_num):
         player_index = struct.unpack('<b', data[offset:offset+1])[0]
         b.update({a[1]:player_index})
         offset += 1
-
+        
         player_name,data_len =check_string(data,offset)
-        player_name:str = player_name
+        player_name= player_name.decode('utf-8')
         b.update({a[2]:player_name})
         offset += data_len
         
@@ -328,34 +328,7 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
         offset += 4
         c.append(b)
     msg_dict.update({players_num : c})
-    # Players:bytes = msg_dict['Players']
-    # offset = main_len
-    # Players_list  = Players.split(b'\x00')
-    # data_list = []
-    # print(Players_list)
-    # for i in Players_list:
-    #     offset = 0
-    #     data_dict = {}
-    #     Index:str = struct.unpack('<b', bytes(i[offset:offset+1]))
-    #     data_dict.update({a[0]:Index})
-    #     offset += 1
-        
-    #     new,data_len =check_string(i,offset)
-    #     Name:str  = new
-    #     data_dict.update({a[1]:Name})
-    #     offset += data_len
 
-    #     Score, = struct.unpack('<l', i[i:offset+4])
-    #     data_dict.update({a[2]:Score})
-    #     offset += 4
-
-    #     Duration:str = struct.unpack('<f', i[offset:offset+4])
-    #     data_dict.update({a[3]:Duration})
-    #     offset += 4
-        
-    #     data_list.append(data_dict)
-    #     some_dict = data_list
-    # msg_dict['Players_detail'] = some_dict
     return msg_dict
 
 def dict_player_info(msg:list) ->dict:
@@ -372,8 +345,14 @@ def dict_player_info(msg:list) ->dict:
     for i in [2]:
         # tu_info[i] = str(tu_info[i])
         msg_dict.update({pl_title[1]:tu_info[1][0]})
-    print(msg_dict)
     return msg_dict
+
+# def messagedict_change(message):
+#     new_dict = {}
+#     new_dict["number"] = message["header"]
+#     for i in range(32):
+        
+
 
 def players(ip:str, port:int,times = 60) -> dict:
     """ip to dict"""
@@ -390,4 +369,4 @@ def players(ip:str, port:int,times = 60) -> dict:
     message = player_split(message,data,data_len)
     # cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
     
-    return data
+    return message
