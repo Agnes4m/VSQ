@@ -179,6 +179,9 @@ def server(ip:str, port:int,times = 60) -> dict:
 
         # header, protocol, name, map_, folder, /game, appid, players, max_players, bots, /server_type, environment, visibility, vac, version, /edf  = struct.unpack('<b b 35s 13s 12s 14s h b b b c c b b 8s 46s', data)
 
+def Aserver(ip:str, port:int,times = 60) -> dict:
+    return server(ip, port,times)
+
 def header(ip,port,times:int = 60):
     return server(ip, port,times)['header']
 
@@ -387,3 +390,6 @@ def Player(ip:str, port:int,times = 60) -> dict:
     message = player_split(message,data,data_len)
     # cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
     return message
+
+async def APlayer(ip:str, port:int,times = 60) -> dict:
+    return Player(ip, port,times)
