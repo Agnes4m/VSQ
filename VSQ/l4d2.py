@@ -268,7 +268,6 @@ def server_player_info(ip: str, port: int) -> bytes:
     else:
         print("Invalid Response")
     s.close()
-    print (data)
     return data
 
 
