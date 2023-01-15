@@ -5,6 +5,7 @@ import time
 cache = {}
 tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'players', 'max_players', 'bots', 'server_type', 'environment', 'visibility', 'vac', 'version', 'edf')
 pl_title = ('header', 'Players')
+# Players:Index,Name,Score,Duration
 
 def server_info(
     ip:str, 
@@ -305,11 +306,12 @@ def unpack__player_info(data) -> list:
 def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
     """玩家数据很多，先进行\x00分割再处理"""
     a = ['players_num','Index','Name','Score','Duration']
-    b = {}
+    
     c = []
     players_num = data[0]
     offset = 1
     for i in range(players_num):
+        b = {}
         player_index = struct.unpack('<b', data[offset:offset+1])[0]
         b.update({a[1]:player_index})
         offset += 1
@@ -325,10 +327,11 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
         
         player_duration, = struct.unpack('<f', data[offset:offset+4])
         b.update({a[4]:player_duration})
-        offset += 4
+        offset += 5
+        print(b)
         c.append(b)
-    msg_dict.update({players_num : c})
-
+        print(c)
+    msg_dict['Players'] = c
     return msg_dict
 
 def dict_player_info(msg:list) ->dict:
@@ -355,7 +358,23 @@ def dict_player_info(msg:list) ->dict:
 
 
 def players(ip:str, port:int,times = 60) -> dict:
-    """ip to dict"""
+    """
+    ip to dict
+    {
+        'header':1,
+        'Players':
+            [{
+                'Index':0,
+                'Name':xxx,
+                'Score':114514,
+                'Duration':int but who care
+            },
+            {
+                ...
+            }
+            ]
+    }
+    """
     if (ip, port) in cache:
         # check if the cache is still fresh
         if time.time() - cache[(ip, port)]['timestamp'] < times:
