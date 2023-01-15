@@ -4,7 +4,7 @@ import time
 
 cache = {}
 tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'players', 'max_players', 'bots', 'server_type', 'environment', 'visibility', 'vac', 'version', 'edf')
-
+pl_title = ('header', 'Players')
 
 def server_info(
     ip:str, 
@@ -42,8 +42,8 @@ def server_info(
     else:
         print("Invalid Response")
     s.close()
-    # print(len(data))
     return data
+
 
 def unpack_info(data) -> list:
         '''
@@ -86,7 +86,6 @@ def unpack_info(data) -> list:
         return [msg,main_log]
 
 
-
 def dict_info(msg:list) ->dict:
     tu_info = (header, protocol, name, map_, folder, game, appid, players, max_players, bots, server_type, environment, visibility, vac, version, edf) = msg
     msg_dict = {} 
@@ -105,38 +104,37 @@ def dict_info(msg:list) ->dict:
 def edf_split(msg_dict:dict,data,main_len:int) -> dict:
     a = ['port','steam_id','spectator_port','spectator_name','Keywords','GameID']
     edf = msg_dict['edf']
+    print(len(edf))
     edf = int.from_bytes(edf, byteorder='little')
-    offset = main_len
-    # print(offset)
+    offset = main_len+1
     if edf & 0x80 :
         port:str = struct.unpack('<H', data[offset:offset+2])
-        msg_dict.update({a[0]:port})
+        msg_dict.update({a[0]:port[0]})
     offset += 2
     if edf & 0x10:
         steam_id:str = struct.unpack('<Q', data[offset:offset+8])
-        msg_dict.update({a[1]:steam_id})
+        msg_dict.update({a[1]:steam_id[0]})
     offset += 8
     if edf & 0x40:
-        spectator_port, = struct.unpack('<H', data[offset:offset+3])
-        msg_dict.update({a[2]:spectator_port})
+        spectator_port, = struct.unpack('<H', data[offset:offset+2])
+        msg_dict.update({a[2]:spectator_port[0]})
         offset += 2
         new,data_len =check_string(data,offset)
         spectator_name:str  = new
-        msg_dict.update({a[3]:spectator_name.decode()})
+        msg_dict.update({a[3]:spectator_name[0]})
         offset += data_len
     if edf & 0x20:
         new,data_len =check_string(data,offset)
+        print(data_len)
         Keywords:str = new
         msg_dict.update({a[4]:Keywords.decode()})
         offset += data_len
     if edf & 0x01:
         GameID:str = struct.unpack('<Q', data[offset:offset+8])
-        msg_dict.update({a[1]:GameID})
-        offset += data_len
+        msg_dict.update({a[5]:GameID[0]})
+        offset += 8
     # print(msg_dict)
     return msg_dict
-    
-    
     
 
 """
@@ -155,7 +153,6 @@ print("14、Vac: ",vac)
 print("15、Server version: ",version.decode())
 """
 
-
 def check_string(data:bytes,sock:int) -> list:
     """check len(string)"""
     data_this = data[sock:]
@@ -166,7 +163,7 @@ def check_string(data:bytes,sock:int) -> list:
     return [new[0],data_len]
 
 
-def get_server_info(ip:str, port:int,times) -> dict:
+def server(ip:str, port:int,times = 60) -> dict:
     """ip to dict"""
     if (ip, port) in cache:
         # check if the cache is still fresh
@@ -182,49 +179,215 @@ def get_server_info(ip:str, port:int,times) -> dict:
         # header, protocol, name, map_, folder, /game, appid, players, max_players, bots, /server_type, environment, visibility, vac, version, /edf  = struct.unpack('<b b 35s 13s 12s 14s h b b b c c b b 8s 46s', data)
 
 def header(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['header']
+    return server(ip, port,times)['header']
 
 def protocol(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['protocol']
+    return server(ip, port,times)['protocol']
 
 def name(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['name']
+    return server(ip, port,times)['name']
 
 def map_(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['map_']
+    return server(ip, port,times)['map_']
 
 def folder(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['folder']
+    return server(ip, port,times)['folder']
 
 def appid(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['appid']
+    return server(ip, port,times)['appid']
 
 def players(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['players']
+    return server(ip, port,times)['players']
 
 def max_players(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['max_players']
+    return server(ip, port,times)['max_players']
 
 def server_type(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['server_type']
+    return server(ip, port,times)['server_type']
 
 def environment(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['environment']
+    return server(ip, port,times)['environment']
 
 def visibility(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['visibility']
+    return server(ip, port,times)['visibility']
 
 def vac(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['vac']
+    return server(ip, port,times)['vac']
 
 def version(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['version']
+    return server(ip, port,times)['version']
 
 def version(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['version']
+    return server(ip, port,times)['version']
 
 def edf(ip,port,times:int = 60):
-    return get_server_info(ip, port,times)['edf']
+    return server(ip, port,times)['edf']
     
 # for variable in tu_title:
 #     locals()[variable] = lambda ip,port: get_server_info(ip,port)[variable]
+
+
+
+
+
+
+def server_player_info(ip: str, port: int) -> bytes:
+    """
+    Get information about the players currently on the server.
+    :param ip: server ip address
+    :param port: server port
+    :return: bytes containing player information
+    """
+    address = (ip, port)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(5)
+    # Send challenge request
+    header = b'\xff\xff\xff\xff'
+    packet = b'\x55\xff\xff\xff\xff'
+    try:
+        s.sendto(header + packet, address)
+        data, _ = s.recvfrom(1024)
+    except socket.timeout:
+        print("Timeout Occured")
+        return
+    if not data.startswith(header):
+        print("Invalid Response")
+        return
+    # check if the response contains challenge number
+    if data[4] == 65:
+        #extract challenge number
+        challenge_number = data[5:]
+        struct.unpack('<L', challenge_number)
+        packet = header + b'\x55' + challenge_number
+        s.sendto(packet, address)
+        data, _ = s.recvfrom(1024)
+    if data[4] == 68:
+        print('Player info received')
+        data = data[5:]
+    else:
+        print("Invalid Response")
+    s.close()
+    print (data)
+    return data
+
+
+
+def unpack__player_info(data) -> list:
+        '''
+        byte	8 bit character or unsigned integer \n
+        short	16 bit signed integer \n
+        long	32 bit signed integer \n
+        float	32 bit floating point \n
+        long long	64 bit unsigned integer \n
+        string	variable-length byte field, encoded in UTF-8, terminated by 0x00 \n
+        '''
+        """PLAN B"""
+        n:int = 0 # time
+        sock:int = 0 # order
+        msg = []
+        for n in range(1,3):
+            if n in [1]: # byte
+                new = struct.unpack('<b', bytes([data[sock]]))
+                msg.append(new[0])
+                sock += 1
+                main_log = sock
+            if n in [2]: # string-check the len
+                datas = data[sock:]
+                data_len = len(datas)
+                tag = '<'+str(data_len)+'s'
+                new = struct.unpack(tag, bytes(datas))
+                new
+                msg.append(new)
+        
+            # print('第',n,'次值为：',sock)
+        return [msg,main_log]
+    
+def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
+    """玩家数据很多，先进行\x00分割再处理"""
+    a = ['players_num','Index','Name','Score','Duration']
+    b = {}
+    c = []
+    players_num = data[0]
+    offset = 2
+    for i in range(players_num):
+        player_index = struct.unpack('<b', data[offset:offset+1])[0]
+        b.update({a[1]:player_index})
+        offset += 1
+
+        player_name,data_len =check_string(data,offset)
+        player_name:str = player_name
+        b.update({a[2]:player_name})
+        offset += data_len
+        
+        player_score, = struct.unpack('<l', data[offset:offset+4])
+        b.update({a[3]:player_score})
+        offset += 4
+        
+        player_duration, = struct.unpack('<f', data[offset:offset+4])
+        b.update({a[4]:player_duration})
+        offset += 4
+        c.append(b)
+    msg_dict.update({players_num : c})
+    # Players:bytes = msg_dict['Players']
+    # offset = main_len
+    # Players_list  = Players.split(b'\x00')
+    # data_list = []
+    # print(Players_list)
+    # for i in Players_list:
+    #     offset = 0
+    #     data_dict = {}
+    #     Index:str = struct.unpack('<b', bytes(i[offset:offset+1]))
+    #     data_dict.update({a[0]:Index})
+    #     offset += 1
+        
+    #     new,data_len =check_string(i,offset)
+    #     Name:str  = new
+    #     data_dict.update({a[1]:Name})
+    #     offset += data_len
+
+    #     Score, = struct.unpack('<l', i[i:offset+4])
+    #     data_dict.update({a[2]:Score})
+    #     offset += 4
+
+    #     Duration:str = struct.unpack('<f', i[offset:offset+4])
+    #     data_dict.update({a[3]:Duration})
+    #     offset += 4
+        
+    #     data_list.append(data_dict)
+    #     some_dict = data_list
+    # msg_dict['Players_detail'] = some_dict
+    return msg_dict
+
+def dict_player_info(msg:list) ->dict:
+    tu_info = (header, Players) = msg
+    msg_dict = {} 
+    for i in range(1):
+        try:
+            tu_info[i] = tu_info[i].decode()
+        except (AttributeError,UnicodeDecodeError):
+            pass
+        finally:
+            tu_info[i] = str(tu_info[i])
+        msg_dict.update({pl_title[i]:tu_info[i]})
+    for i in [2]:
+        # tu_info[i] = str(tu_info[i])
+        msg_dict.update({pl_title[1]:tu_info[1][0]})
+    print(msg_dict)
+    return msg_dict
+
+def players(ip:str, port:int,times = 60) -> dict:
+    """ip to dict"""
+    if (ip, port) in cache:
+        # check if the cache is still fresh
+        if time.time() - cache[(ip, port)]['timestamp'] < times:
+            return cache[(ip, port)]['message']
+    data = server_player_info(ip, port)
+    if data == b'\x00':
+        return {}
+    data_list,data_len = unpack__player_info(data)
+    print(data_list)
+    message = dict_player_info(data_list)
+    message = player_split(message,data,data_len)
+    # cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
+    
+    return data
