@@ -357,7 +357,7 @@ def dict_player_info(msg:list) ->dict:
         
 
 
-def players(ip:str, port:int,times = 60) -> dict:
+def Player(ip:str, port:int,times = 60) -> dict:
     """
     ip to dict
     {
@@ -387,5 +387,4 @@ def players(ip:str, port:int,times = 60) -> dict:
     message = dict_player_info(data_list)
     message = player_split(message,data,data_len)
     # cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
-    
     return message
