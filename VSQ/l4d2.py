@@ -164,7 +164,7 @@ def check_string(data:bytes,sock:int) -> list:
     return [new[0],data_len]
 
 
-def server(ip:str, port:int,times = 60) -> dict:
+async def server(ip:str, port:int,times = 60) -> dict:
     """ip to dict"""
     if (ip, port) in cache:
         # check if the cache is still fresh
