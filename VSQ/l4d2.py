@@ -377,10 +377,6 @@ def Player(ip:str, port:int,times = 60) -> dict:
             ]
     }
     """
-    if (ip, port) in cache:
-        # check if the cache is still fresh
-        if time.time() - cache[(ip, port)]['timestamp'] < times:
-            return cache[(ip, port)]['message']
     data = server_player_info(ip, port)
     if data == b'\x00':
         return {}
@@ -388,7 +384,6 @@ def Player(ip:str, port:int,times = 60) -> dict:
     print(data_list)
     message = dict_player_info(data_list)
     message = player_split(message,data,data_len)
-    # cache[(ip, port)] = {'message': message, 'timestamp': time.time()}
     return message
 
 async def APlayer(ip:str, port:int,times = 60) -> dict:
