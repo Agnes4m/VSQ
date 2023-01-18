@@ -66,7 +66,7 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
         port:int = 20715 
         name = l4d2.name(ip,port)
         map_ = l4d2.map_(ip,port)
-        players = l4d2.players(ip,port)
+        players = await l4d2.players(ip,port)
         print(name)
         print(map_)
         print(players)
@@ -75,13 +75,13 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
         from VSQ import l4d2
         ip:str = '127.0.0.1' 
         port:int = 20715 
-        server_dict = l4d2.server(ip,port)
+        server_dict = await l4d2.server(ip,port)
         print(server_dict)
 
         from VSQ import l4d2
         ip:str = '127.0.0.1' 
         port:int = 20715 
-        players_data = l4d2.players(ip,port)
+        players_data =  await l4d2.players(ip,port)
         players_number = players_data['header']
         for i in players_data['Players'][0]
             print('player_name',i['Name'])

@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
  
 setuptools.setup(
     name="VSQ",
-    version="0.0.4", 
+    version="0.0.5", 
     author="Umamusume-Agnes-Digital", 
     author_email="Z735803792@163.com", 
     description="VALVE-Server Queries(now for L4D2)",
