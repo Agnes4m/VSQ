@@ -341,7 +341,7 @@ def dict_player_info(msg:list) ->dict:
     msg_dict = {} 
     for i in range(1):
         try:
-            tu_info[i] = tu_info[i].decode()
+            tu_info[i] = tu_info[i].decode('utf-8', 'ignore')
         except (AttributeError,UnicodeDecodeError):
             pass
         finally:
