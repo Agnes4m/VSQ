@@ -92,7 +92,7 @@ def dict_info(msg:list) ->dict:
     msg_dict = {} 
     for i in range(15):
         try:
-            tu_info[i] = tu_info[i].decode()
+            tu_info[i] = tu_info[i].decode('utf-8', 'ignore')
         except (AttributeError,UnicodeDecodeError):
             pass
         finally:
@@ -128,7 +128,7 @@ def edf_split(msg_dict:dict,data,main_len:int) -> dict:
         new,data_len =check_string(data,offset)
         print(data_len)
         Keywords:str = new
-        msg_dict.update({a[4]:Keywords.decode()})
+        msg_dict.update({a[4]:Keywords.decode('utf-8', 'ignore')})
         offset += data_len
     if edf & 0x01:
         GameID:str = struct.unpack('<Q', data[offset:offset+8])
@@ -319,7 +319,7 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
         offset += 1
         
         player_name,data_len =check_string(data,offset)
-        player_name= player_name.decode('utf-8')
+        player_name= player_name.decode('utf-8', 'ignore')
         b.update({a[2]:player_name})
         offset += data_len
         
