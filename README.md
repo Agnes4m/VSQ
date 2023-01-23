@@ -18,8 +18,8 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
 
 
 ## 🎉 available已实现
- - ipv4连接到求生之路2服务器并返回基本信息
- - ipv4连接到求生之路2服务器并返回在线玩家信息
+ - ipv4连接到求生之路2服务器并返回基本信息(A2S_INFO)
+ - ipv4连接到求生之路2服务器并返回在线玩家信息(A2S_PLAYER)
 
 ## 📖 to do list可能会做
  - 暂无
