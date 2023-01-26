@@ -1,7 +1,7 @@
 <div align="center">
 
 # VALVE-Server Queries
-_✨基于与求生之路2服务器协议，一款可以查询求生服务器状态的库✨_
+_✨基于A2S协议，一款可以查询求生服务器状态的库✨_
 
 _✨Based on the agreement with the Left 4 Dead 2 server, a library that can query the status of the survival server.✨_
 
@@ -22,6 +22,7 @@ _✨Based on the agreement with the Left 4 Dead 2 server, a library that can que
  - ipv4连接到求生之路2服务器并返回在线玩家信息(A2S_PLAYER)
 
 ## 📖 to do list可能会做
+
  - 暂无
 
 ## 👌 pip安装

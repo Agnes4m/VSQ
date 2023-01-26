@@ -105,7 +105,6 @@ def dict_info(msg:list) ->dict:
 def edf_split(msg_dict:dict,data,main_len:int) -> dict:
     a = ['port','steam_id','spectator_port','spectator_name','Keywords','GameID']
     edf = msg_dict['edf']
-    print(len(edf))
     edf = int.from_bytes(edf, byteorder='little')
     offset = main_len+1
     if edf & 0x80 :
@@ -126,7 +125,6 @@ def edf_split(msg_dict:dict,data,main_len:int) -> dict:
         offset += data_len
     if edf & 0x20:
         new,data_len =check_string(data,offset)
-        print(data_len)
         Keywords:str = new
         msg_dict.update({a[4]:Keywords.decode('utf-8', 'ignore')})
         offset += data_len
@@ -314,26 +312,38 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
     offset = 1
     for i in range(players_num):
         b = {}
-        player_index = struct.unpack('<b', data[offset:offset+1])[0]
+        player_index, = struct.unpack('<b', data[offset:offset+1])
         b.update({a[1]:player_index})
         offset += 1
         
         player_name,data_len =check_string(data,offset)
-        player_name= player_name.decode('utf-8', 'ignore')
+        player_name= player_name.decode('utf-8')
         b.update({a[2]:player_name})
-        offset += data_len
+        offset += data_len +1
         
         player_score, = struct.unpack('<l', data[offset:offset+4])
         b.update({a[3]:player_score})
         offset += 4
         
         player_duration, = struct.unpack('<f', data[offset:offset+4])
-        b.update({a[4]:player_duration})
-        offset += 5
-        print(b)
+        # player_duration = time.strftime('%H:%M:%S', time.gmtime(player_duration))
+        seconds = int(player_duration)
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+
+        time_string = ""
+        if hours > 0:
+            time_string += f"{hours}h "
+        if minutes > 0:
+            time_string += f"{minutes}m "
+        if seconds > 0:
+            time_string += f"{seconds}s"
+
+        b.update({a[4]:time_string})
+        offset += 4
         c.append(b)
-        print(c)
     msg_dict['Players'] = c
+    print(c)
     return msg_dict
 
 def dict_player_info(msg:list) ->dict:
@@ -369,7 +379,7 @@ def Player(ip:str, port:int,times = 60) -> dict:
                 'Index':0,
                 'Name':xxx,
                 'Score':114514,
-                'Duration':int but who care
+                'Duration':xxh xxm xxs
             },
             {
                 ...
@@ -381,7 +391,6 @@ def Player(ip:str, port:int,times = 60) -> dict:
     if data == b'\x00':
         return {}
     data_list,data_len = unpack__player_info(data)
-    print(data_list)
     message = dict_player_info(data_list)
     message = player_split(message,data,data_len)
     return message
