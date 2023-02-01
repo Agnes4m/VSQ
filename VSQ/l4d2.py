@@ -36,7 +36,7 @@ def server_info(
         s.sendto(packet, address)
         data, _ = s.recvfrom(1024)
     if data[4] == 73:
-        print('Server info received')
+        # Server info received
         data = data[4:]
     elif data == b'A':
         print("Server is using Challenge Number")
@@ -264,7 +264,7 @@ def server_player_info(ip: str, port: int) -> bytes:
         s.sendto(packet, address)
         data, _ = s.recvfrom(1024)
     if data[4] == 68:
-        print('Player info received')
+        # Player info received
         data = data[5:]
     else:
         print("Invalid Response")
