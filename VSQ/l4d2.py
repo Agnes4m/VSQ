@@ -1,6 +1,8 @@
 import socket
 import struct
 import time
+import tracemalloc
+tracemalloc.start()
 
 cache = {}
 tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'players', 'max_players', 'bots', 'server_type', 'environment', 'visibility', 'vac', 'version', 'edf')
@@ -25,9 +27,9 @@ class l4d:
         """
         msg_dict,s = await self.rcon_connect(host,port)
         if msg_dict  == None:
-            a = {}
-            return a
+            return None
         self.close_(s)
+        return msg_dict
     
     
     async def rcon_connect(
@@ -78,7 +80,7 @@ class l4d:
         msg_dict.update(message)
         # player部分
         try:
-            s.sendto(header + packet, address)
+            s.sendto(header + packet_player, address)
             data, _ = s.recvfrom(1024)
         except socket.timeout:
             print("Timeout Occured")
