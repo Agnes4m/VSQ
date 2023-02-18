@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "VSQ"
 
-version = "0.1.0"
+version = "0.1.1"
 description = "VALVE-Server Queries(now for L4D2)"
 authors = ["Agnes_Digital <Z735803792@163.com>"]
 license = "GPLv3"
