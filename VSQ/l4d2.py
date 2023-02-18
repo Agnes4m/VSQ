@@ -7,6 +7,126 @@ tu_title = ('header', 'protocol', 'name', 'map_', 'folder', 'game', 'appid', 'pl
 pl_title = ('header', 'Players')
 # Players:Index,Name,Score,Duration
 
+class l4d:
+    async def __init__(
+        self,
+        host:str,
+        port:int,
+    ):
+        """
+            连接到服务器,返回输出字典
+            如果无响应，则返回空白字典
+
+        Args:
+            host (str): ipv4
+            port (int): 端口
+            msg  (str): 输入的话
+            mode (str): 连接模式['once','connect']
+        """
+        msg_dict,s = await self.rcon_connect(host,port)
+        if msg_dict  == None:
+            a = {}
+            return a
+        self.close_(s)
+    
+    
+    async def rcon_connect(
+        self,
+        host:str,
+        port:int,
+
+    ):
+        """只连接一次"""
+        s = await self.connect_(host,port)
+        msg_dict = await self.query_server(s,host,port)
+        return msg_dict
+        
+        
+    async def query_server(self,s,host, port):
+        # server部分
+        msg_dict = {}
+        header = b'\xFF\xFF\xFF\xFF'
+        packet_server = b'\x54Source Engine Query\x00'
+        packet_player = b'\x55\xff\xff\xff\xff'
+        address = (host, port)
+        try:
+            s.sendto(header+packet_server, address)
+            data, _ = s.recvfrom(1024)
+        except socket.timeout:
+            print("Timeout Occured")
+            return
+        if not data.startswith(header):
+            print("Invalid Response")
+            return
+        # check if the response contains challenge number
+        if data[4] == 65:
+            """challenge_number"""
+            challenge_number = data[5:]
+            packet = header + packet + challenge_number
+            struct.unpack('<L', challenge_number)
+            s.sendto(packet, address)
+            data, _ = s.recvfrom(1024)
+        if data[4] == 73:
+            # Server info received
+            data = data[4:]
+        elif data == b'A':
+            print("Server is using Challenge Number")
+        else:
+            print("Invalid Response")
+        data_list,data_len  = unpack_info(data)
+        message = edf_split(dict_info(data_list),data,data_len)
+        msg_dict.update(message)
+        # player部分
+        try:
+            s.sendto(header + packet, address)
+            data, _ = s.recvfrom(1024)
+        except socket.timeout:
+            print("Timeout Occured")
+            return
+        if not data.startswith(header):
+            print("Invalid Response")
+            return
+        # check if the response contains challenge number
+        if data[4] == 65:
+            #extract challenge number
+            challenge_number = data[5:]
+            struct.unpack('<L', challenge_number)
+            packet = header + b'\x55' + challenge_number
+            s.sendto(packet, address)
+            data, _ = s.recvfrom(1024)
+        if data[4] == 68:
+            # Player info received
+            data = data[5:]
+        else:
+            print("Invalid Response")
+        data_list,data_len = unpack__player_info(data)
+        message = dict_player_info(data_list)
+        message = player_split(message,data,data_len)
+        msg_dict.update(message)
+        
+        return msg_dict
+    
+    
+    async def connect_(
+        self,
+        host:str,
+        port:int,
+    ):
+        """连接到服务器"""
+        address = (host, port)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(5)
+        return s
+        
+        
+    async def close_(
+        s:socket
+    ):
+        """断开连接"""
+        s.close()
+
+
+
 def server_info(
     ip:str, 
     port:int
@@ -83,7 +203,6 @@ def unpack_info(data) -> list:
                 msg.append(new)
                 main_log = sock
                 sock = sock + data_len + 1
-            # print('第',n,'次值为：',sock)
         return [msg,main_log]
 
 
@@ -99,7 +218,6 @@ def dict_info(msg:list) ->dict:
             tu_info[i] = str(tu_info[i])
         msg_dict.update({tu_title[i]:tu_info[i]})
     msg_dict.update({tu_title[15]:tu_info[15]})
-    # print(msg_dict)
     return msg_dict
 
 def edf_split(msg_dict:dict,data,main_len:int) -> dict:
@@ -315,9 +433,8 @@ def player_split(msg_dict:dict,data:bytes,main_len:int) -> dict:
         player_index, = struct.unpack('<b', data[offset:offset+1])
         b.update({a[1]:player_index})
         offset += 1
-        
         player_name,data_len =check_string(data,offset)
-        player_name= player_name.decode('utf-8')
+        player_name= player_name.decode('utf-8', 'ignore')
         b.update({a[2]:player_name})
         offset += data_len +1
         

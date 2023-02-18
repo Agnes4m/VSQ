@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "VSQ"
+
+version = "0.1.0"
+description = "VALVE-Server Queries(now for L4D2)"
+authors = ["Agnes_Digital <Z735803792@163.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+homepage = "https://github.com/Umamusume-Agnes-Digital/VSQ"
+repository = "https://github.com/Umamusume-Agnes-Digital/VSQ"
+keywords = ["steam", "game", "l4d2", "query"]
+classifiers = [
+    "License :: OSI Approved :: GPL-3.0 license",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+]
+include = [
+    "LICENSE","README.md"
+]
+ 
+[tool.poetry.dependencies]
+python = "^3.7"
+
+ 
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
